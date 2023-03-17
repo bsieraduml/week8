@@ -1,0 +1,38 @@
+  stage('Build a gradle project') {
+      git branch: 'main', url: 'https://github.com/bsieraduml/week8.git'
+      container('gradle') {
+        stage('Build a gradle project') {
+          sh '''
+          pwd
+          chmod +x gradlew
+          ./gradlew build
+          mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
+          '''
+        } // stage build a gradle project
+
+        stage("Code coverage") {
+            //playground runs no tests, feature runs all tests except Code Coverage
+            if (env.BRANCH_NAME != 'main' && env.BRANCH_NAME != 'master') {
+              try {
+                sh '''
+                ./gradlew jacocoTestCoverageVerification
+                ./gradlew jacocoTestReport
+                  '''
+              } catch (Exception E) {
+                  echo 'Failure detected'
+              }
+
+              // from the HTML publisher plugin
+              // https://www.jenkins.io/doc/pipeline/steps/htmlpublisher/
+              publishHTML (target: [
+                  reportDir: 'build/reports/tests/test',
+                  reportFiles: 'index.html',
+                  reportName: "JaCoCo Report"
+              ])       
+            } else {
+              echo 'Skip Code coverage for branch ' + env.BRANCH_NAME
+            }
+        } // stage code coverage       
+    } // container gradle
+
+  } //build a gradle project 
