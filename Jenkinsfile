@@ -62,9 +62,10 @@ stage('Build a gradle project') {
               try {
                 sh '''
                 echo 'try curl'
-                test $(curl calculator-service:8080/sum?a=6\\&b=2) -eq 3 && echo 'pass' || 'fail'
-                //./gradlew jacocoTestCoverageVerification
-                //./gradlew jacocoTestReport
+                sh "chmod +x acceptance_test_8_1.sh && ./acceptance_test_8_1.sh"
+                // test $(curl calculator-service:8080/sum?a=6\\&b=2) -eq 3 && echo 'pass' || 'fail'
+                // ./gradlew jacocoTestCoverageVerification
+                // ./gradlew jacocoTestReport
                   '''
               } catch (Exception E) {
                   echo 'Failure detected'
