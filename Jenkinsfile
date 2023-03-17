@@ -33,16 +33,12 @@ podTemplate(yaml: '''
   node(POD_LABEL) {
 
   stage('k8s') {
-    git 'https://github.com/bsieraduml/week8.git'
+    git branch: 'main', url: 'https://github.com/bsieraduml/week8.git'
     container('centos') {
       stage('start calculator') {
         sh '''
-        cd Chapter08/sample1
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
         chmod +x ./kubectl
-        //./kubectl delete deployment calculator-deployment -n devops-tools
-        //./kubectl delete deployment hazelcast -n devops-tols
-        sleep 30
         ./kubectl apply -f calculator.yaml
         ./kubectl apply -f hazelcast.yaml
           '''
@@ -50,5 +46,41 @@ podTemplate(yaml: '''
       }
     }
 
-} // NODE pod label
+stage('Build a gradle project') {
+      git branch: 'main', url: 'https://github.com/bsieraduml/week8.git'
+      container('gradle') {
+        stage('Test via curl') {
+          sh '''
+          pwd
+          test $(curl calculator-service:8080/sum?a=6\\&b=2) -eq 3 && echo 'pass' || 'fail'
+          '''
+        } // stage build a gradle project
+
+        stage("Acceptance Testing") {
+            //exercise 8 part 1 test via curl
+
+              try {
+                sh '''
+                echo 'try curl'
+                test $(curl calculator-service:8080/sum?a=6\\&b=2) -eq 3 && echo 'pass' || 'fail'
+                //./gradlew jacocoTestCoverageVerification
+                //./gradlew jacocoTestReport
+                  '''
+              } catch (Exception E) {
+                  echo 'Failure detected'
+              }
+
+              // from the HTML publisher plugin
+              // https://www.jenkins.io/doc/pipeline/steps/htmlpublisher/
+              // publishHTML (target: [
+              //     reportDir: 'build/reports/tests/test',
+              //     reportFiles: 'index.html',
+              //     reportName: "JaCoCo Report"
+              // ])       
+
+        } // stage code coverage  
+      }
+    }        
+
+  } // NODE pod label
 } //root
