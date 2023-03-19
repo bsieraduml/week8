@@ -35,7 +35,7 @@ public class StepDefinitions {
     }
 
     @Given("^I have dividend and divisor: (.*) and (.*)$")
-    public void i_have_divident_and_divisor(String a, String b) throws Throwable {
+    public void i_have_dividend_and_divisor(String a, String b) throws Throwable {
         this.a = a;
         this.b = b;
     }
